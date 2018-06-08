@@ -1,13 +1,14 @@
 #ifndef PS2Protocolheader
 #define PS2Protocolheader
-#include <cinttypes>
+
+#include <stdint.h>
 
 class PS2Protocol
 {
 	public:
 		PS2Protocol(int8_t PS2_DATA_LINE, int8_t PS2_CLOCK_LINE);
 		uint8_t receive();
-		uint8_t transfer(uint8_t message);
+		uint8_t xfer(uint8_t message);
 		uint8_t host_receive();
 		uint8_t host_transfer(uint8_t message);
 		uint8_t calculate_parity(uint8_t message); // not needed

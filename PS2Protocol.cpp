@@ -1,4 +1,5 @@
 #include "PS2Protocol.h"
+#include "Arduino.h"
 #define CLOCK 10
 //https://www.avrfreaks.net/sites/default/files/PS2%20Keyboard.pdf
 // 1st Receive communication from keyboard to arduino
@@ -12,7 +13,8 @@ PS2Protocol::PS2Protocol(int8_t PS2_DATA_LINE, int8_t PS2_CLOCK_LINE) {
 uint8_t PS2Protocol::poll() {
 	uint8_t ret;
 	uint8_t clk_val, data_val;
-
+  uint8_t p_clk_val, p_data_val;
+ 
 	p_clk_val = digitalRead(_PS2_DATA_LINE);
 	p_data_val = digitalRead(_PS2_CLOCK_LINE);
 	if (!(p_clk_val && p_data_val))
@@ -21,10 +23,9 @@ uint8_t PS2Protocol::poll() {
 		clk_val = digitalRead(_PS2_DATA_LINE);
 
 		}
-			for (int i=0;i<50)
+			for (int i=0; i<50; i++)
 		data_val = digitalRead(_PS2_CLOCK_LINE);
-		if (clk)
-	}
+		if (clk_val)
 	return ret;
 }
 
@@ -81,7 +82,7 @@ uint8_t PS2Protocol::receive() {
 	}
 }
 
-uint8_t PS2Protocol::transfer(uint8_t message, uint8_t parity_bit) {
+uint8_t PS2Protocol::xfer(uint8_t message) {
 	uint8_t parity = 0;
 	/* First generate start condition (clock goes low, and data low)*/
 	digitalWrite(_PS2_DATA_LINE, LOW);
@@ -114,7 +115,7 @@ uint8_t PS2Protocol::transfer(uint8_t message, uint8_t parity_bit) {
 	digitalWrite(_PS2_CLOCK_LINE, HIGH);
 	delay(CLOCK);
 }
-
+#if 0
 uint8_t PS2Protocol::host_receive() {
 
 }
@@ -125,3 +126,4 @@ uint8_t PS2Protocol::host_transfer(uint8_t message, uint8_t parity_bit) {
 uint8_t PS2Protocol::calculate_parity(uint8_t message) {
 	/* Even number of 1's -> parity bit 1, odd number -> 0 */
 }
+#endif

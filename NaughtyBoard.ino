@@ -1,8 +1,7 @@
-#include <Arduino.h>
 #include "PS2Protocol.h"
 
 /* Initialize protocol pins */
-PS2Protocol ps2protocol(12, 13);
+PS2Protocol* ps2protocol = new PS2Protocol(12, 13);
 
 /* Declare names for pin numbers */
 const int NUM_LED = 2;
@@ -24,18 +23,18 @@ void loop() {
 	uint8_t msg, parity;
 
 	/* Wait for key press */
-	while (!ps2protocol.wait_for_start_condition()) {
+	while (!ps2protocol->wait_for_start_condition()) {
 		/* Just wait... */
 	}
 
 	/* Receive data */
-	msg = ps2protocol.receive();
+	msg = ps2protocol->receive();
 
 	/* Check data parity */
-	msg = ps2protocol.calculate_parity(msg);
+	//msg = ps2protocol->calculate_parity(msg);
 
 	/* Transfer the same data */
-	ps2protocol.transfer(msg, parity);
+//	ps2protocol.transfer(msg, parity);
 
 	Serial.print(msg, BIN);
 	Serial.print(msg);
