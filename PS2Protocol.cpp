@@ -32,6 +32,10 @@ uint8_t PS2Protocol::wait_for_start_condition() {
 	uint8_t clk_val, data_val;
 	clk_val = digitalRead(_PS2_DATA_LINE);
 	data_val = digitalRead(_PS2_CLOCK_LINE);
+  // following is a test
+  digitalWrite(LED_BUILTIN, HIGH);
+  delay(100);
+  digitalWrite(LED_BUILTIN, LOW);
 	if (!clk_val && !data_val)
 		ret = 0;
 	else
