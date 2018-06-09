@@ -1,6 +1,8 @@
 #include "PS2Protocol.h"
 #include "Arduino.h"
 #define CLOCK 10
+//https://www.avrfreaks.net/sites/default/files/PS2%20Keyboard.pdf
+// 1st Receive communication from keyboard to arduino
 
 PS2Protocol::PS2Protocol(int8_t PS2_DATA_LINE, int8_t PS2_CLOCK_LINE) {
 	_PS2_DATA_LINE = PS2_DATA_LINE;
@@ -42,10 +44,19 @@ uint8_t PS2Protocol::wait_for_start_condition() {
 		ret = 2;
 	return ret;
 }
+/*1 start bit. This is always 0.
+8 data bits, least significant bit first.
+1 parity bit (odd parity).
+1 stop bit. This is always 1.
+1 acknowledge bit (host-to-device communication only)
 
+read on falling edge
+*/
 uint8_t PS2Protocol::receive() {
-	uint8_t ret;
-	uint8_t clk_val, data_val, p_clk_val, p_data_val, trigger=0, cnt=0, result, vals=0;
+	/* Neglect start and stop bits in data */
+	uint8_t ret, dir;
+	uint8_t clk_val, p_clk_val, p_data_val, trigger=0, cnt=0, result, vals=0;
+	uint16_t data_val = 0;
 	if(wait_for_start_condition() == 2)
 		return 2;
 	p_clk_val = digitalRead(_PS2_DATA_LINE);
@@ -53,12 +64,14 @@ uint8_t PS2Protocol::receive() {
 	while (1) {
 		clk_val = digitalRead(_PS2_CLOCK_LINE);
 			if (clk_val != p_clk_val) {
-				trigger;
+				/* clock signal changed */
+				trigger = 1;
+				dir = clk_val;
 				p_clk_val = clk_val;
 			}
-		if (trigger) {
+		if (trigger && dir == 0) {
+			/* read data now when clock changed */
 			trigger = 0;
-			
 			data_val = digitalRead(_PS2_DATA_LINE);
 			if (data_val) {
 				result |= data_val << cnt;
@@ -66,11 +79,10 @@ uint8_t PS2Protocol::receive() {
 			}
 			cnt++;
 		}
-		if(cnt == 9)
+		if(cnt == 10)
 			if((vals % 2) == data_val)
 				Serial.print("All Good");
 			break;
-	
 	}
 }
 
