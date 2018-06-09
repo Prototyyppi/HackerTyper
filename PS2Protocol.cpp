@@ -1,12 +1,13 @@
 #include "PS2Protocol.h"
+#include "PS2CharSet.h"
 #include "Arduino.h"
 #define CLOCK 10
-//https://www.avrfreaks.net/sites/default/files/PS2%20Keyboard.pdf
-// 1st Receive communication from keyboard to arduino
 
 PS2Protocol::PS2Protocol(int8_t PS2_DATA_LINE, int8_t PS2_CLOCK_LINE) {
 	_PS2_DATA_LINE = PS2_DATA_LINE;
 	_PS2_CLOCK_LINE = PS2_CLOCK_LINE;
+   pinMode(_PS2_DATA_LINE, INPUT);
+   pinMode(_PS2_CLOCK_LINE, INPUT); 
 }
 
 /* Poll host pins for data and device pins for typos */
@@ -30,60 +31,86 @@ uint8_t PS2Protocol::poll() {
 }
 
 uint8_t PS2Protocol::wait_for_start_condition() {
-	uint8_t ret;
+	//uint8_t ret;
 	uint8_t clk_val, data_val;
 	clk_val = digitalRead(_PS2_DATA_LINE);
 	data_val = digitalRead(_PS2_CLOCK_LINE);
-  // following is a test
+  /* following is a test
   digitalWrite(LED_BUILTIN, HIGH);
   delay(100);
   digitalWrite(LED_BUILTIN, LOW);
-	if (!clk_val && !data_val)
-		ret = 0;
+ 
+  Serial.print("Waiting...");
+  Serial.print(data_val);
+  Serial.print(clk_val);
+   */
+	if (clk_val == 0 && data_val == 0)
+		return 0;
 	else
-		ret = 2;
-	return ret;
+		return 255;
+	
 }
-/*1 start bit. This is always 0.
-8 data bits, least significant bit first.
-1 parity bit (odd parity).
-1 stop bit. This is always 1.
-1 acknowledge bit (host-to-device communication only)
 
-read on falling edge
-*/
+void PS2Protocol::debug() {
+  digitalWrite(LED_BUILTIN, digitalRead(_PS2_DATA_LINE));
+  digitalWrite(LED_BUILTIN, digitalRead(_PS2_DATA_LINE));
+  Serial.print(digitalRead(_PS2_CLOCK_LINE));
+}
+
+bool PS2Protocol::is_release_stroke(uint16_t msg) {
+  if(msg == 240)
+    return true;
+  return false;
+}
+
 uint8_t PS2Protocol::receive() {
-	/* Neglect start and stop bits in data */
-	uint8_t ret, dir;
-	uint8_t clk_val, p_clk_val, p_data_val, trigger=0, cnt=0, result, vals=0;
-	uint16_t data_val = 0;
-	if(wait_for_start_condition() == 2)
+	uint16_t ret, golden_trigger = 0;
+	uint16_t clk_val, data_val = 0, p_clk_val = 0, p_data_val=0, trigger=0, cnt=0, result=0;
+	/*if(wait_for_start_condition() == 2)
 		return 2;
+   
 	p_clk_val = digitalRead(_PS2_DATA_LINE);
 	p_data_val = digitalRead(_PS2_CLOCK_LINE);
-	while (1) {
+   */
+	while (!golden_trigger) {
 		clk_val = digitalRead(_PS2_CLOCK_LINE);
-			if (clk_val != p_clk_val) {
-				/* clock signal changed */
+    data_val = digitalRead(_PS2_DATA_LINE);
+		if (clk_val == 1 && p_clk_val == 0)
 				trigger = 1;
-				dir = clk_val;
-				p_clk_val = clk_val;
-			}
-		if (trigger && dir == 0) {
-			/* read data now when clock changed */
+    p_clk_val = clk_val;
+		if (trigger) {
 			trigger = 0;
-			data_val = digitalRead(_PS2_DATA_LINE);
-			if (data_val) {
-				result |= data_val << cnt;
-				vals++;
+      result |= data_val << cnt++;
 			}
-			cnt++;
-		}
-		if(cnt == 10)
-			if((vals % 2) == data_val)
-				Serial.print("All Good");
+			
+		/* Problem with data integrity bit --> solve later
+		if(cnt == 9)
+			if((vals % 2) == data_val) {
+				Serial.print("Got: ");
+        Serial.println(result);
 			break;
+			}
+	  */ 
+
+     if(cnt == 9 ) {
+      /* the start condition or something is there, fix next line */
+        result = result >> 1;
+#if PRINT
+        Serial.print("Got: ");
+        Serial.println(result);
+#endif
+       /* trigger=0;
+        cnt=0;
+        result = 0;
+        vals=0;
+        */
+        golden_trigger = 1;
+      }
+      
 	}
+ delay(12); // Program too fast, need to check protocol more.
+
+ return result;
 }
 
 uint8_t PS2Protocol::xfer(uint8_t message) {
@@ -119,6 +146,23 @@ uint8_t PS2Protocol::xfer(uint8_t message) {
 	digitalWrite(_PS2_CLOCK_LINE, HIGH);
 	delay(CLOCK);
 }
+
+void PS2Protocol::charrify_hex(uint8_t msg) {
+  uint8_t match;
+
+  for (match = 0; match < 36; match++){
+    if (make_letters_and_numbers[match] == msg){
+      Serial.print(letters_and_numbers[match]);
+      //Serial.println(msg);
+      break;
+    }
+  }
+  //Serial.println(msg);
+  //Serial.println(letters_and_numbers[msg]);
+  
+  
+}
+
 #if 0
 uint8_t PS2Protocol::host_receive() {
 

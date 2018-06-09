@@ -1,13 +1,20 @@
-
+#ifndef PS2Chars
+#define PS2Chars
 
 char letters_and_numbers[] = {
 				'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L',
 				'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
-				'Y', 'Z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'
+				'Y', 'Z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+                'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L',
+        'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
+        'Y', 'Z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+                'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L',
+        'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
+        'Y', 'Z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'
 			};
 
 /* Make letters are generated when button is pressed in keyboard */
-unsigned char make_letters_and_numbers[] = {
+uint8_t make_letters_and_numbers[] = {
 					0x1C, 0x32, 0x21, 0x23, 0x24, 0x2B, 0x34, 0x33, 0x43,
 					0x3B, 0x42, 0x4B, 0x3A, 0x31, 0x44, 0x4D, 0x15, 0x2D,
 					0x1B, 0x2C, 0x3C, 0x2A, 0x1D, 0x22, 0x35, 0x1A, 0x45,
@@ -60,3 +67,4 @@ E1,14,77,
 E1,F0,14,
 F0,77
 */
+#endif

@@ -1,5 +1,7 @@
 #ifndef PS2Protocolheader
 #define PS2Protocolheader
+#define DEBUG 0
+#define PRINT 0
 
 #include <stdint.h>
 
@@ -14,6 +16,9 @@ class PS2Protocol
 		uint8_t calculate_parity(uint8_t message); // not needed
 		uint8_t wait_for_start_condition();
 		uint8_t poll();
+    void charrify_hex(uint8_t msg); // Must be streamlined
+    bool is_release_stroke(uint16_t msg);
+    void debug();
 	private:
 		int8_t _PS2_DATA_LINE;
 		int8_t _PS2_CLOCK_LINE;
