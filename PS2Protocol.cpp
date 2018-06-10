@@ -92,23 +92,21 @@ uint8_t PS2Protocol::receive() {
 			}
 	  */ 
 
-     if(cnt == 9 ) {
-      /* the start condition or something is there, fix next line */
-        result = result >> 1;
+     if(cnt == 11 ) {
+      /* the start condition and parity and stop are there, fix next line */
+        result <<= 2;
+        result >>= 3;
 #if PRINT
         Serial.print("Got: ");
         Serial.println(result);
 #endif
-       /* trigger=0;
-        cnt=0;
-        result = 0;
-        vals=0;
-        */
+
         golden_trigger = 1;
       }
       
 	}
- delay(12); // Program too fast, need to check protocol more.
+
+ delay(2); // Program too fast, need to check protocol more.
 
  return result;
 }
@@ -150,7 +148,7 @@ uint8_t PS2Protocol::xfer(uint8_t message) {
 void PS2Protocol::charrify_hex(uint8_t msg) {
   uint8_t match;
 
-  for (match = 0; match < 36; match++){
+  for (match = 0; match < 45; match++){
     if (make_letters_and_numbers[match] == msg){
       Serial.print(letters_and_numbers[match]);
       //Serial.println(msg);
