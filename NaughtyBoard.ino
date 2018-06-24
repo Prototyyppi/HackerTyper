@@ -1,7 +1,8 @@
 #include "PS2Protocol.h"
 
 /* Initialize protocol pins */
-PS2Protocol* ps2protocol = new PS2Protocol(7, 4);
+//PS2Protocol* ps2protocol = new PS2Protocol(7, 4);
+PS2Protocol* ps2protocol = new PS2Protocol(7, 4, 2, 8);
 
 /* Declare names for pin numbers */
 const int NUM_LED = 2;
@@ -22,22 +23,20 @@ void setup() {
 void loop() {
   uint8_t msg, parity, ignore = 0;
   while (1) {
-
-
-#if DEBUG
- 
-    ps2protocol->debug();
-#endif
-  
- 
-	/* Wait for key press */
-	while (ps2protocol->wait_for_start_condition()){}
-		/* Just wait... */
-//Serial.print("Waiting for key press... ");
+    
+// Cut here
+ps2protocol->check_line_busy();
+ps2protocol->xfer(0x2B);
+        digitalWrite(LED_BUILTIN, HIGH);
+  delay(100);
+  digitalWrite(LED_BUILTIN, LOW);
+  }
+#if 0
 	/* Receive data */
 	msg = ps2protocol->receive();
- 
-  if(msg == 240) {
+
+
+  if (msg == 0xF0) {
     ignore = 1;
 #if PRINT
     Serial.print("WAS release stroke");
@@ -47,9 +46,7 @@ void loop() {
   if (ignore == 1)
     ignore = 0;
  ps2protocol->charrify_hex(msg);
-	/* Check data parity */
-	//msg = ps2protocol->calculate_parity(msg);
-
+	
 	/* Transfer the same data */
 //	ps2protocol.transfer(msg, parity);
 
@@ -57,4 +54,5 @@ void loop() {
 	//Serial.print(msg);
 
 	}
+ #endif
  }
