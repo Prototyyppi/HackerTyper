@@ -155,15 +155,20 @@ uint8_t PS2Protocol::check_line_busy() {
   uint8_t clk_val, data_val;
    pinMode(_HOST_PS2_DATA_LINE, INPUT);
    pinMode(_HOST_PS2_CLOCK_LINE, INPUT); // Let them be inputs
-  
+
+  do {
     clk_val = digitalRead(_HOST_PS2_DATA_LINE);
     data_val = digitalRead(_HOST_PS2_CLOCK_LINE);
  
-  if (clk_val == 0 && data_val == 1) {
-    // host wants to send data
-    while (!digitalRead(_HOST_PS2_CLOCK_LINE));
-    }
-    generate_clock(); // Not interested in the data as of now
+    if (clk_val == 0 && data_val == 1) {
+     // host wants to send data
+     while (!digitalRead(_HOST_PS2_CLOCK_LINE));
+    
+    generate_clock(); // Not interested in the data as of now. It may need to be received...
+    
+  }
+  } while (clk_val != 1);
+    Serial.print("Clear");
     delay(10);
 
     
@@ -172,16 +177,19 @@ uint8_t PS2Protocol::check_line_busy() {
 
 uint8_t PS2Protocol::generate_clock() {
   
-   pinMode(_HOST_PS2_DATA_LINE, INPUT);
-   pinMode(_HOST_PS2_CLOCK_LINE, OUTPUT); // Let them be outputs
-  for (int i = 0; i < 16; i++) {
-  digitalWrite(_HOST_PS2_DATA_LINE, LOW);
-  delay(CLOCK_STEP); // Get ready to publish bit
-  delay(CLOCK_DATA); // Data is readable now
+  pinMode(_HOST_PS2_CLOCK_LINE, OUTPUT); // Let them be outputs
+  pinMode(_HOST_PS2_DATA_LINE, INPUT);
+  for (int i = 0; i < 9; i++) {
+  digitalWrite(_HOST_PS2_CLOCK_LINE, LOW);
+  delay(1); // Get ready to publish bit;
+  delay(1); // Data is readable now
   digitalWrite(_HOST_PS2_CLOCK_LINE, HIGH);
-  delay(CLOCK_STEP); // Reset clock high
-  delay(CLOCK_DATA);
+  delay(1); // Reset clock high
+    Serial.print(digitalRead(_HOST_PS2_DATA_LINE));
+  delay(1);
+  
   }
+  //Serial.print("Generated some clock");
 
   return 0;
 }
@@ -246,7 +254,7 @@ uint8_t PS2Protocol::calculate_parity(uint8_t message) {
 
 #if 0
 uint8_t PS2Protocol::host_receive() {
-
+ 
 }
 
 uint8_t PS2Protocol::host_transfer(uint8_t message, uint8_t parity_bit) {

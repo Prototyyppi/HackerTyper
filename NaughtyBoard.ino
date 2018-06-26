@@ -25,10 +25,11 @@ void loop() {
   while (1) {
     
 // Cut here
+//Serial.print("I still work");
 ps2protocol->check_line_busy();
 ps2protocol->xfer(0x2B);
-        digitalWrite(LED_BUILTIN, HIGH);
-  delay(100);
+  digitalWrite(LED_BUILTIN, HIGH);
+  //delay(100);
   digitalWrite(LED_BUILTIN, LOW);
   }
 #if 0
