@@ -141,11 +141,11 @@ while (k < 60) {
 uint8_t PS2Protocol::send_bit(uint8_t bit_to_send) {
 
   digitalWrite(_HOST_PS2_DATA_LINE, bit_to_send);
-  delay(CLOCK_STEP); // Get ready to publish bit
+  //delay(CLOCK_STEP); // Get ready to publish bit
   digitalWrite(_HOST_PS2_CLOCK_LINE, LOW);
-  delay(CLOCK_DATA); // Data is readable now
+  //delay(CLOCK_DATA); // Data is readable now
   digitalWrite(_HOST_PS2_CLOCK_LINE, HIGH);
-  delay(CLOCK_STEP); // Reset clock high
+  //delay(CLOCK_STEP); // Reset clock high
 
 }
 
@@ -169,7 +169,7 @@ uint8_t PS2Protocol::check_line_busy() {
   }
   } while (clk_val != 1);
     Serial.print("Clear");
-    delay(10);
+    //delay(10);
 
     
   return 0;
@@ -179,16 +179,26 @@ uint8_t PS2Protocol::generate_clock() {
   
   pinMode(_HOST_PS2_CLOCK_LINE, OUTPUT); // Let them be outputs
   pinMode(_HOST_PS2_DATA_LINE, INPUT);
-  for (int i = 0; i < 9; i++) {
+  for (int i = 0; i < 10; i++) {
   digitalWrite(_HOST_PS2_CLOCK_LINE, LOW);
-  delay(1); // Get ready to publish bit;
-  delay(1); // Data is readable now
+  //delay(1); // Get ready to publish bit;
+  //delay(1); // Data is readable now
   digitalWrite(_HOST_PS2_CLOCK_LINE, HIGH);
-  delay(1); // Reset clock high
-    Serial.print(digitalRead(_HOST_PS2_DATA_LINE));
-  delay(1);
-  
+  //delay(1); // Reset clock high
+  Serial.print(digitalRead(_HOST_PS2_DATA_LINE));
+  //delay(1);
   }
+  pinMode(_HOST_PS2_DATA_LINE, OUTPUT); // Do ACK
+  digitalWrite(_HOST_PS2_CLOCK_LINE, LOW);
+  //delay(1); // Get ready to publish bit;
+  digitalWrite(_HOST_PS2_DATA_LINE, LOW);
+  //delay(1); // Data is readable now
+  digitalWrite(_HOST_PS2_DATA_LINE, HIGH);
+  digitalWrite(_HOST_PS2_CLOCK_LINE, HIGH);
+  //delay(1); // Reset clock high
+  Serial.print(digitalRead(_HOST_PS2_DATA_LINE));
+  //delay(1);
+  pinMode(_HOST_PS2_DATA_LINE, INPUT);
   //Serial.print("Generated some clock");
 
   return 0;
@@ -209,7 +219,7 @@ uint8_t PS2Protocol::xfer(uint8_t message) {
   }
   send_bit(calculate_parity(message));
   send_bit(0); // End bit
-  delay(10);
+  //delay(10);
   send_bit(1); // Reset
 }
 
