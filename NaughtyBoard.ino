@@ -27,9 +27,9 @@ void loop() {
 // Cut here
 //Serial.print("I still work");
 ps2protocol->check_line_busy();
-ps2protocol->xfer(0x2B);
+ps2protocol->xfer(0x3e);
   digitalWrite(LED_BUILTIN, HIGH);
-  //delay(100);
+  delay(100);
   digitalWrite(LED_BUILTIN, LOW);
   }
 #if 0

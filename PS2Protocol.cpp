@@ -2,7 +2,7 @@
 #include "PS2CharSet.h"
 #include "Arduino.h"
 #define CLOCK_STEP 1
-#define CLOCK_DATA 2
+#define DELAY 2
 
 PS2Protocol::PS2Protocol(int8_t PS2_DATA_LINE, int8_t PS2_CLOCK_LINE) {
 	_PS2_DATA_LINE = PS2_DATA_LINE;
@@ -141,11 +141,11 @@ while (k < 60) {
 uint8_t PS2Protocol::send_bit(uint8_t bit_to_send) {
 
   digitalWrite(_HOST_PS2_DATA_LINE, bit_to_send);
-  //delay(CLOCK_STEP); // Get ready to publish bit
+  delay(DELAY); // Get ready to publish bit
   digitalWrite(_HOST_PS2_CLOCK_LINE, LOW);
-  //delay(CLOCK_DATA); // Data is readable now
+  delay(DELAY); // Data is readable now
   digitalWrite(_HOST_PS2_CLOCK_LINE, HIGH);
-  //delay(CLOCK_STEP); // Reset clock high
+  delay(DELAY); // Reset clock high
 
 }
 
@@ -168,7 +168,7 @@ uint8_t PS2Protocol::check_line_busy() {
     
   }
   } while (clk_val != 1);
-    Serial.print("Clear");
+    //Serial.print("Clear");
     //delay(10);
 
     
@@ -176,40 +176,52 @@ uint8_t PS2Protocol::check_line_busy() {
 }
 
 uint8_t PS2Protocol::generate_clock() {
-  
+  uint16_t mesg = 0, val;
   pinMode(_HOST_PS2_CLOCK_LINE, OUTPUT); // Let them be outputs
   pinMode(_HOST_PS2_DATA_LINE, INPUT);
   for (int i = 0; i < 10; i++) {
   digitalWrite(_HOST_PS2_CLOCK_LINE, LOW);
-  //delay(1); // Get ready to publish bit;
-  //delay(1); // Data is readable now
+  delay(DELAY); // Get ready to publish bit;
+ // delay(DELAY); // Data is readable now
   digitalWrite(_HOST_PS2_CLOCK_LINE, HIGH);
-  //delay(1); // Reset clock high
-  Serial.print(digitalRead(_HOST_PS2_DATA_LINE));
-  //delay(1);
+  delay(DELAY); // Reset clock high
+  mesg |= (digitalRead(_HOST_PS2_DATA_LINE) << i);
+  delay(DELAY);
   }
   pinMode(_HOST_PS2_DATA_LINE, OUTPUT); // Do ACK
+   digitalWrite(_HOST_PS2_DATA_LINE, LOW);
   digitalWrite(_HOST_PS2_CLOCK_LINE, LOW);
-  //delay(1); // Get ready to publish bit;
-  digitalWrite(_HOST_PS2_DATA_LINE, LOW);
-  //delay(1); // Data is readable now
+  delay(DELAY); // Get ready to publish bit;
+
+ // delay(DELAY); // Data is readable now
+    digitalWrite(_HOST_PS2_CLOCK_LINE, HIGH);
   digitalWrite(_HOST_PS2_DATA_LINE, HIGH);
-  digitalWrite(_HOST_PS2_CLOCK_LINE, HIGH);
-  //delay(1); // Reset clock high
-  Serial.print(digitalRead(_HOST_PS2_DATA_LINE));
-  //delay(1);
+
+  delay(DELAY); // Reset clock high
+  delay(DELAY);
   pinMode(_HOST_PS2_DATA_LINE, INPUT);
   //Serial.print("Generated some clock");
+  val = (mesg >> 1) & 0xFF;
+  if (val) {
+    Serial.print(val, HEX);
+    Serial.print("\n");
+  }
 
+    if (val == 0xff)
+        xfer(0xfa);
+        /*
+    else
+      xfer(0xFA);
+      */
   return 0;
 }
 
 uint8_t PS2Protocol::xfer(uint8_t message) {
 
 	uint8_t parity = 0;
-
+  //Serial.print(message);
    pinMode(_HOST_PS2_DATA_LINE, OUTPUT);
-  
+  pinMode(_HOST_PS2_CLOCK_LINE, OUTPUT);
 	/* First generate start condition (clock goes low, and data low)*/
   send_bit(0);
 
@@ -219,7 +231,7 @@ uint8_t PS2Protocol::xfer(uint8_t message) {
   }
   send_bit(calculate_parity(message));
   send_bit(0); // End bit
-  //delay(10);
+  delay(DELAY);
   send_bit(1); // Reset
 }
 
